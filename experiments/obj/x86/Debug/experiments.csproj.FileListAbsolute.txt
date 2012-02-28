@@ -1,0 +1,5 @@
+C:\Users\Андрей\Documents\!work\DL 6970 (console client)\experiments\experiments\bin\Debug\experiments.exe
+C:\Users\Андрей\Documents\!work\DL 6970 (console client)\experiments\experiments\bin\Debug\experiments.pdb
+C:\Users\Андрей\Documents\!work\DL 6970 (console client)\experiments\experiments\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Андрей\Documents\!work\DL 6970 (console client)\experiments\experiments\obj\x86\Debug\experiments.exe
+C:\Users\Андрей\Documents\!work\DL 6970 (console client)\experiments\experiments\obj\x86\Debug\experiments.pdb
