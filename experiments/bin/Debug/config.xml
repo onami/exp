@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" isRegistered="false">
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" isRegistered="true">
   <server>http://rfidserver</server>
-  <login>csharp</login>
-  <pass>f0c951d22714b96f8b53e895df8fe0a8f8afc6f4</pass>
+  <login>bgvlKW3ZAsLwzqLPkMXjG0oQJ6G4ax7eJxuZNbgN</login>
+  <pass>95ea602b25a2d56aa6038c9eaf9c71dad21d46f6</pass>
 </Configuration>

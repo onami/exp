@@ -12,15 +12,16 @@ namespace experiments
    public class RfidClient
     {
         Configuration conf;
-        string cookies;
+        CookieCollection cookies;
         public HttpStatusCode StatusCode;
 
         public RfidClient(Configuration conf)
         {
             this.conf = conf;
+            if (conf.isRegistered == false) Signup();
         }
         
-        public void Signup()
+        void Signup()
         {
             string msg;
             string post = "login="+conf.login+"&pass="+conf.pass;
@@ -31,7 +32,9 @@ namespace experiments
             if ((int)StatusCode == 200)
             {
                 conf.pass = msg;
-                Console.WriteLine(conf.pass);   
+                Console.WriteLine("Success: {0}", msg);
+                conf.isRegistered = true;
+                conf.serialize();
             }
         }
 
@@ -45,9 +48,15 @@ namespace experiments
 
             if ((int)StatusCode == 200)
             {
-                cookies = response.Cookies.ToString();
-                Console.WriteLine(cookies);
+                cookies = response.Cookies;
+                Console.WriteLine("Success! {0}", cookies["session_id"].Value);
             }
+        }
+
+        public void SendRfidReport(List<>, List<>)
+        {
+
+
         }
 
         HttpWebResponse ProcessResponse(HttpWebResponse response, out string responseMsg)
@@ -69,6 +78,7 @@ namespace experiments
             webRequest.AllowAutoRedirect = false;
             webRequest.ContentType = "application/x-www-form-urlencoded";
             webRequest.ContentLength = byteArray.Length;
+            webRequest.CookieContainer = new CookieContainer();
 
             webpageStream = webRequest.GetRequestStream();
             webpageStream.Write(byteArray, 0, byteArray.Length);
