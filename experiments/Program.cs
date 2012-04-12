@@ -39,19 +39,26 @@ namespace experiments
                 return;
             }
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
                 var session = new RfidSession();
                 var reader = new RfidTagReader();
-                reader.GetTags(0, 1, ref session.data, out session.time_stamp);
+                reader.GetTags(0, 30, ref session.data, out session.time_stamp);
                 session.coords = "60 40";
 
                 //foreach (string currentTag in session.data)
                 //{
                 //    Console.WriteLine("{0}", currentTag);
                 //}
+                if (session.data.Count != 0)
+                {
+                    client.SendRfidReport(session);
+                }
 
-                client.SendRfidReport(session);
+                else
+                {
+                    Console.WriteLine("Zero.");
+                }
 
                 if ((int)client.StatusCode == 200)
                 {
