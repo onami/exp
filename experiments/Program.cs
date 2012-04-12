@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Data.SQLite;
 using System.Diagnostics;
-using System.Net;
-using System.IO;
-using System.Text;
-using System.Xml;
-using System.Xml.Serialization;
+using System.Threading;
 
 namespace experiments
 {
@@ -26,19 +21,50 @@ namespace experiments
 
             Console.WriteLine("Time elapsed: {0}", watch.Elapsed);
         }
-        
+
         static void Main()
-        {    
+        {
             var conf = Configuration.deserialize();
             if (conf == null)
             {
                 Console.WriteLine("the configuration hasn't been found");
                 return;
             }
-            var client = new RfidClient(conf);
+            var client = new RfidWebClient(conf);
             client.Auth();
-            //Console.WriteLine("{0}", (int)client.StatusCode);
+            if ((int)client.StatusCode == 403)
+            {
+                Console.WriteLine("Auth Status: Fail.");
+                Console.ReadKey();
+                return;
+            }
+
+            for (int i = 0; i < 100; i++)
+            {
+                var session = new RfidSession();
+                var reader = new RfidTagReader();
+                reader.GetTags(0, 1, ref session.data, out session.time_stamp);
+                session.coords = "60 40";
+
+                //foreach (string currentTag in session.data)
+                //{
+                //    Console.WriteLine("{0}", currentTag);
+                //}
+
+                client.SendRfidReport(session);
+
+                if ((int)client.StatusCode == 200)
+                {
+                    Console.WriteLine("Report: Success! {0}", client.ResponseMsg);
+                }
+                else
+                {
+                    Console.WriteLine("Error: {0}", client.ResponseMsg);
+                }
+            }
+
             Console.ReadKey();
+            Thread.Sleep(500);
         }
     }
 }

@@ -9,3 +9,7 @@ E:\projects\exp\experiments\bin\Debug\experiments.exe
 E:\projects\exp\experiments\bin\Debug\experiments.pdb
 E:\projects\exp\experiments\obj\x86\Debug\ResolveAssemblyReference.cache
 E:\projects\exp\experiments\bin\Debug\experiments.exe.config
+E:\projects\exp\experiments\bin\Debug\Newtonsoft.Json.dll
+E:\projects\exp\experiments\bin\Debug\Newtonsoft.Json.pdb
+E:\projects\exp\experiments\bin\Debug\Newtonsoft.Json.xml
+E:\projects\exp\experiments\bin\Debug\DL6940CSharp.dll
