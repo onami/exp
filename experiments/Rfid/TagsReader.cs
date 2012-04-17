@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace rfid
 {
-    class DL770Reader
+    class DL6970Reader
     {
         enum MemoryMask : byte
         {
@@ -31,18 +31,29 @@ namespace rfid
         byte antennaSet = 0x03; // 
         int tagsAmount = 0;
         int EPClistLength = 0;
-        
-        public void GetTags(int interval, int count, ref List<string> tagsSet, out string timeStamp)
-            {
 
+        public void GetTags(int interval, int count, ref List<string> tagsSet, out string timeMarker)
+        {
             int connectionResult = StaticClassReaderB.OpenNetPort(port, host.ToString(), ref readerAdress, ref portReturned);
-            Trace.WriteLine(DateTime.Now.ToString() + "\tThe connection result is " + connectionResult);
+            if (connectionResult != 0)
+            {
+                Trace.WriteLine(DateTime.Now.ToString() + "\tThe connection result is " + connectionResult);
+            }
+
+            StaticClassReaderB.SetBeepNotification(ref readerAdress, 0, portReturned);            
 
             //Переводим китайское время в формат dd-mm-yy hh:mm:ss
-            var timeStamp_ = new byte[6];
-            var timeResult = StaticClassReaderB.GetTime(ref readerAdress, timeStamp_, portReturned);
-            timeStamp = Convert.ToString(timeStamp_[2]) + '.' + Convert.ToString(timeStamp_[1]) + '.' + Convert.ToString(timeStamp_[0]) + ' ' +
-            Convert.ToString(timeStamp_[3]) + ':' + Convert.ToString(timeStamp_[4]) + ':' + Convert.ToString(timeStamp_[5]);
+            var timeMarker_ = new byte[6];
+            StaticClassReaderB.GetTime(ref readerAdress, timeMarker_, portReturned);
+            //Chinese coders cannot into Unix time
+            //timeMarker = (new DateTime(2000 + Convert.ToInt32(timeMarker_[0]),
+            //    Convert.ToInt32(timeMarker_[1]),
+            //    Convert.ToInt32(timeMarker_[2]),
+            //    Convert.ToInt32(timeMarker_[3]),
+            //    Convert.ToInt32(timeMarker_[4]),
+            //    Convert.ToInt32(timeMarker_[5])
+            //    )).ToString("yyyy-MM-dd HH:mm:ss");
+            timeMarker = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss");
 
             var EpcList = new byte[10000];
 
@@ -79,17 +90,17 @@ namespace rfid
                             tagsSet.Add(epcData);
                         }
                     }
-                }                
+                }
 
                 if (inventoryStatus == 0x00)
                 {
-                   break;
+                    break;
                 }
                 Thread.Sleep(interval);
             }
 
             int disconnectionResult = StaticClassReaderB.CloseNetPort(portReturned);
-         //   System.Console.WriteLine("The disconnection result is {0:X}", disconnectionResult);
+            //Console.WriteLine("The disconnection result is {0:X}", disconnectionResult);
         }
     }
 }

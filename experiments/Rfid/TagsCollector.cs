@@ -8,8 +8,6 @@ namespace rfid
 {
     public class RfidTagsCollector
     {
-        public enum SessionStatus { Normal, Interrupted };
-
         SQLiteConnection connection;
 
         public RfidTagsCollector(string connectionString)
@@ -53,15 +51,15 @@ namespace rfid
             }
         }
 
-        public void Write(List<string> tags, string location, SessionStatus status = SessionStatus.Normal)
+        public void Write(RfidSession session)
         {
             var transaction = connection.BeginTransaction();
 
             //Register a new session
-            var cmd = new SQLiteCommand("INSERT INTO sessions (time_marker, location_id, status) VALUES(@time_marker, @status, @location_id)", connection);
-            cmd.Parameters.AddWithValue("@time_marker", System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            cmd.Parameters.AddWithValue("@location_id", location);
-            cmd.Parameters.AddWithValue("@status", status);
+            var cmd = new SQLiteCommand("INSERT INTO sessions (time_marker, location_id, status) VALUES(@time_marker, @location_id, @status)", connection);
+            cmd.Parameters.AddWithValue("@time_marker", session.time);
+            cmd.Parameters.AddWithValue("@location_id", session.location);
+            cmd.Parameters.AddWithValue("@status", session.status);
             cmd.ExecuteNonQuery();
 
             //Look up the last session id
@@ -75,13 +73,12 @@ namespace rfid
             cmd.Parameters.Add(tag_);
 
             //Add new tags
-            foreach (string tag in tags)
+            foreach (string tag in session.tags)
             {
                 tag_.Value = tag;
                 cmd.ExecuteNonQuery();
             }
             transaction.Commit();
-            tags.Clear();
         }
 
         public void Close()

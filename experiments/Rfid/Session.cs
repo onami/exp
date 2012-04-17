@@ -7,13 +7,15 @@ namespace rfid
 {
     public class RfidSession
     {
-        public string coords;
+        public enum SessionStatus { Normal = 1, Interrupted = 2 };
         public string location;
         public string time;
+        public SessionStatus status;
         public List<string> tags;
 
-        public RfidSession()
+        public RfidSession(SessionStatus status = SessionStatus.Normal)
         {
+            this.status = status;
             tags = new List<string>();
         }
     }
