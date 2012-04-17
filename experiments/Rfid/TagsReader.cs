@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using ReaderB;
+using System.Diagnostics;
 
-namespace experiments
+namespace rfid
 {
-    class RfidTagReader
+    class DL770Reader
     {
-        enum memoryMask : byte
+        enum MemoryMask : byte
         {
             EPC = 1,
             TID = 2,
@@ -35,7 +36,7 @@ namespace experiments
             {
 
             int connectionResult = StaticClassReaderB.OpenNetPort(port, host.ToString(), ref readerAdress, ref portReturned);
-           // System.Console.WriteLine("The connection result is {0:X}", connectionResult);
+            Trace.WriteLine(DateTime.Now.ToString() + "\tThe connection result is " + connectionResult);
 
             //Переводим китайское время в формат dd-mm-yy hh:mm:ss
             var timeStamp_ = new byte[6];
@@ -49,7 +50,7 @@ namespace experiments
             {
                 int inventoryStatus = StaticClassReaderB.Inventory_G2(
                     ref readerAdress,
-                    (byte)memoryMask.EPC,
+                    (byte)MemoryMask.EPC,
                     maskAddr,
                     maskLength,
                     maskData,
@@ -71,7 +72,7 @@ namespace experiments
                     {
                         int currentEpcLength = EpcList[j];
 
-                        var epcData = BitConverter.ToString(EpcList, j + 1, currentEpcLength);
+                        var epcData = BitConverter.ToString(EpcList, j + 1, currentEpcLength).Replace("-", "");
 
                         if (tagsSet.Contains(epcData) == false)
                         {

@@ -6,24 +6,12 @@ using System.Text;
 using Newtonsoft.Json;
 using System.Security.Cryptography;
 
-namespace experiments
+namespace rfid
 {
-    public class RfidSession
-    {
-        public string coords;
-        public string time_stamp;
-        public List<string> data;
-
-        public RfidSession()
-        {
-            data = new List<string>();
-        }
-    }
-
     public class RfidWebClient
     {
-        //Только для чтения.
-        public HttpStatusCode StatusCode;
+        public HttpStatusCode StatusCode { get { return StatusCode_; } }
+        HttpStatusCode StatusCode_;
         public string ResponseMsg;
         HttpWebResponse Response;
 
@@ -46,7 +34,7 @@ namespace experiments
 
             SendPostData(url, post);
 
-            if ((int)StatusCode == 200)
+            if ((int)StatusCode_ == 200)
             {
                 Conf.pass = ResponseMsg;
                 Conf.isRegistered = true;
@@ -61,7 +49,7 @@ namespace experiments
 
             SendPostData(Conf.server + "/rfid/auth/", post);
 
-            if ((int)StatusCode == 200)
+            if ((int)StatusCode_ == 200)
             {
                 Cookies = Response.Cookies;
                 Cookies["session_id"].Expires = DateTime.MaxValue;
@@ -89,7 +77,7 @@ namespace experiments
         void ProcessResponse(HttpWebResponse response)
         {
             this.ResponseMsg = (new StreamReader(response.GetResponseStream())).ReadToEnd();
-            this.StatusCode = response.StatusCode;
+            this.StatusCode_ = response.StatusCode;
             this.Response = response;
         }
 

@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Security.Cryptography;
 
-namespace experiments
+namespace rfid
 {
     public class Configuration
     {
