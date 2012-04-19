@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 
 namespace rfid
 {
@@ -7,23 +8,29 @@ namespace rfid
     {
         static void Main()
         {
-            Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
             var watch = new Stopwatch();
             watch.Start();
+            Console.WriteLine("Start\t{0}\t", watch.Elapsed);
 
+            Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
             var collector = new RfidTagsCollector("rfid.db");
             var reader = new DL6970Reader();
 
-            //var session = new RfidSession();
-            //for (int i = 0; i < 2; i++)
+            //for (int j = 0; j < 10; j++)
             //{
-            //    reader.GetTags(0, 10, ref session.tags, out session.time);
-            //    Console.WriteLine("Count: {0}", session.tags.Count);
-            //    Thread.Sleep(50);
+            //    var session = new RfidSession();
+            //    for (int i = 0; i < 1; i++)
+            //    {
+            //        reader.GetTags(0, 10, ref session.tags, out session.time);
+            //        Console.WriteLine("Count: {0}", session.tags.Count);
+            //        Thread.Sleep(50);
+            //    }
+            //    collector.Write(session);
             //}
-            //collector.Write(session);
 
             var webClient = new RfidWebClient(Configuration.deserialize());
+            webClient.Auth();
+            Console.WriteLine("Auth Time: {0}", webClient.ResponseMsg);
             var sessions = collector.GetUnshippedTags();
             if (sessions.Count != 0)
             {
@@ -31,9 +38,8 @@ namespace rfid
                 collector.SetDeliveryStatus(sessions);
             }
 
-            watch.Stop();
+            Console.WriteLine("End\t{0}\t", watch.Elapsed);
             collector.Close();
-            Console.WriteLine("Time elapsed: {0}", watch.Elapsed);
             Console.ReadKey();
         }
     }

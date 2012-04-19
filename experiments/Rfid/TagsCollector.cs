@@ -46,7 +46,8 @@ namespace rfid
                         time = sessionReader.GetString(1),
                         location = sessionReader.GetString(2),
                         deliveryStatus = (RfidSession.DeliveryStatus)sessionReader.GetInt32(3),
-                        readingStatus = (RfidSession.ReadingStatus)sessionReader.GetInt32(4)
+                        readingStatus = (RfidSession.ReadingStatus)sessionReader.GetInt32(4),
+                        readingMode = (RfidSession.ReadingMode)sessionReader.GetInt32(5)
                         };
 
                     var tagCmd = new SQLiteCommand(@"SELECT * from tubes where session_id = " + session.id, connection);
@@ -79,7 +80,8 @@ namespace rfid
                     [time_marker] char(23) NOT NULL,
                     [location_id] char(32) DEFAULT NULL,
                     [delivery_status] integer NOT NULL,
-                    [reading_status] integer NOT NULL
+                    [reading_status] integer NOT NULL,
+                    [reading_mode] integer NOT NULL
                     );";
                 cmd.ExecuteNonQuery();
             }
@@ -90,11 +92,14 @@ namespace rfid
             var transaction = connection.BeginTransaction();
 
             //Register a new session
-            var cmd = new SQLiteCommand("INSERT INTO reading_sessions (time_marker, location_id, delivery_status, reading_status) VALUES(@time_marker, @location_id, @delivery_status, @reading_status)", connection);
+            var cmd = new SQLiteCommand(@"INSERT INTO reading_sessions
+                   (time_marker,  location_id,  delivery_status,  reading_status,  reading_mode)
+            VALUES(@time_marker, @location_id, @delivery_status, @reading_status, @reading_mode)", connection);
             cmd.Parameters.AddWithValue("@time_marker", session.time);
             cmd.Parameters.AddWithValue("@location_id", session.location);
             cmd.Parameters.AddWithValue("@delivery_status", session.deliveryStatus);
             cmd.Parameters.AddWithValue("@reading_status", session.readingStatus);
+            cmd.Parameters.AddWithValue("@reading_mode", session.readingMode);
             cmd.ExecuteNonQuery();
 
             //Look up the last session id

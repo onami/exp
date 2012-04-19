@@ -19,7 +19,6 @@ namespace rfid
         CookieCollection Cookies = new CookieCollection();
         SHA1CryptoServiceProvider Sha1 = new SHA1CryptoServiceProvider();
         UTF8Encoding UniEncoding = new UTF8Encoding();
-
         
         public RfidWebClient(Configuration conf)
         {
@@ -29,16 +28,12 @@ namespace rfid
 
         public void SendRfidReports(List<RfidSession> unshippedSessions)
         {
-            if (Auth() != 200)
-            {
-                return;
-            }
             foreach (var unshippedSession in unshippedSessions)
             {
-                //Если дубликат, тоже не отправлять.                
-                if (SendRfidReport(unshippedSession) == 200 || ResponseMsg == "duplicatedMessage")
+                //Если дубликат, тоже не отправлять.
+                SendRfidReport(unshippedSession);
+                if ((int)StatusCode == 200 || ResponseMsg == "duplicatedMessage")
                 {
-                    Console.WriteLine("Success");
                     unshippedSession.deliveryStatus = RfidSession.DeliveryStatus.Shipped;
                 }
 
@@ -46,6 +41,20 @@ namespace rfid
                 {
                     Trace.WriteLine(ResponseMsg);
                 }
+            }
+        }
+
+        //Перед отсылкой надо сделать аутентификацию и получить куки
+        public void Auth()
+        {
+            string post = "login=" + Conf.login + "&pass=" + Conf.pass;
+
+            SendPostData(Conf.server + "/rfid/auth/", post);
+
+            if ((int)StatusCode == 200)
+            {
+                Cookies = Response.Cookies;
+                Cookies["session_id"].Expires = DateTime.MaxValue;
             }
         }
 
@@ -65,24 +74,8 @@ namespace rfid
             }
         }
 
-        //Перед отсылкой надо сделать аутентификацию и получить куки
-        int Auth()
-        {
-            string post = "login=" + Conf.login + "&pass=" + Conf.pass;
-
-            SendPostData(Conf.server + "/rfid/auth/", post);
-
-            if ((int)StatusCode == 200)
-            {
-                Cookies = Response.Cookies;
-                Cookies["session_id"].Expires = DateTime.MaxValue;
-            }
-
-            return (int)StatusCode;
-        }
-
         //Отсылаем сессию данных
-        int SendRfidReport(RfidSession session)
+        void SendRfidReport(RfidSession session)
         {
             var jsonHashString = String.Empty;
             var jsonString = JsonConvert.SerializeObject(session);
@@ -96,8 +89,6 @@ namespace rfid
 
             var post = "json=" + jsonString + "&checksum=" + jsonHashString;
             SendPostData(Conf.server + "/rfid/post/", post);
-
-            return (int)StatusCode;
         }
 
         void ProcessResponse(HttpWebResponse response)
@@ -111,17 +102,17 @@ namespace rfid
         {
             byte[] byteArray;
             Stream webpageStream;
-            HttpWebRequest webRequest;
-
+            HttpWebRequest webRequest;        
+            
             byteArray = Encoding.UTF8.GetBytes(postData);
             webRequest = (HttpWebRequest)WebRequest.Create(URL);
+            webRequest.Proxy = null; //в противном случае webRequest начинает поиск прокси и тратит кучу времени
             webRequest.Method = "POST";
             webRequest.AllowAutoRedirect = false;
             webRequest.ContentType = "application/x-www-form-urlencoded";
             webRequest.ContentLength = byteArray.Length;
             webRequest.CookieContainer = new CookieContainer();
             webRequest.CookieContainer.Add(Cookies);
-
             webpageStream = webRequest.GetRequestStream();
             webpageStream.Write(byteArray, 0, byteArray.Length);
             webpageStream.Close();

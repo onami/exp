@@ -1,0 +1,1 @@
+UPDATE reading_sessions SET delivery_status = 0

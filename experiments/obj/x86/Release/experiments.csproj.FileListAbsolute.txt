@@ -1,0 +1,10 @@
+E:\projects\exp\experiments\bin\Release\DL6970.exe.config
+E:\projects\exp\experiments\bin\Release\DL6970.exe
+E:\projects\exp\experiments\bin\Release\DL6970.pdb
+E:\projects\exp\experiments\bin\Release\DL6940CSharp.dll
+E:\projects\exp\experiments\bin\Release\Newtonsoft.Json.dll
+E:\projects\exp\experiments\bin\Release\Newtonsoft.Json.pdb
+E:\projects\exp\experiments\bin\Release\Newtonsoft.Json.xml
+E:\projects\exp\experiments\obj\x86\Release\ResolveAssemblyReference.cache
+E:\projects\exp\experiments\obj\x86\Release\DL6970.exe
+E:\projects\exp\experiments\obj\x86\Release\DL6970.pdb
