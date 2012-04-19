@@ -2,5 +2,5 @@
 <Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" isRegistered="true">
   <server>http://rfidserver</server>
   <login>bgvlKW3ZAsLwzqLPkMXjG0oQJ6G4ax7eJxuZNbgN</login>
-  <pass>2b44d47921f2fe5ec0ee0fc2cb6abd9d303d3560</pass>
+  <pass>bb5e1379ccaa46ab1dce6917e0be341706ab776e</pass>
 </Configuration>

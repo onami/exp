@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using ReaderB;
-using System.Diagnostics;
 
 namespace rfid
 {
@@ -25,10 +25,12 @@ namespace rfid
         byte[] maskAddr = new byte[2]; //address of the start bit
         byte maskLength = 0; //length of Mask
         byte maskFlag = 0; // 0x00 - disable; 0x01 enabled;
+
         byte tidAddr = 0; //address of the TID's start bit
         byte tidLength = 0; // length of TID
         byte tidFlag = 0; // 1 - TID; 0 - EPC
-        byte antennaSet = 0x03; // 
+        byte antennaSet = 0; // 
+
         int tagsAmount = 0;
         int EPClistLength = 0;
 
@@ -45,7 +47,7 @@ namespace rfid
             //Переводим китайское время в формат dd-mm-yy hh:mm:ss
             var timeMarker_ = new byte[6];
             StaticClassReaderB.GetTime(ref readerAdress, timeMarker_, portReturned);
-            //Chinese coders cannot into Unix time
+            //DL6970 cannot into Unix time
             //timeMarker = (new DateTime(2000 + Convert.ToInt32(timeMarker_[0]),
             //    Convert.ToInt32(timeMarker_[1]),
             //    Convert.ToInt32(timeMarker_[2]),

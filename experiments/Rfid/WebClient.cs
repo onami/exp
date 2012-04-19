@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
-using System.Security.Cryptography;
 
 namespace rfid
 {
     public class RfidWebClient
     {
-        public HttpStatusCode StatusCode { get { return StatusCode_; } }
-        HttpStatusCode StatusCode_;
+        public HttpStatusCode StatusCode { get; private set; }
         public string ResponseMsg;
         HttpWebResponse Response;
 
@@ -20,21 +20,44 @@ namespace rfid
         SHA1CryptoServiceProvider Sha1 = new SHA1CryptoServiceProvider();
         UTF8Encoding UniEncoding = new UTF8Encoding();
 
+        
         public RfidWebClient(Configuration conf)
         {
             this.Conf = conf;
             if (conf.isRegistered == false) Signup();
         }
 
+        public void SendRfidReports(List<RfidSession> unshippedSessions)
+        {
+            if (Auth() != 200)
+            {
+                return;
+            }
+            foreach (var unshippedSession in unshippedSessions)
+            {
+                //Если дубликат, тоже не отправлять.                
+                if (SendRfidReport(unshippedSession) == 200 || ResponseMsg == "duplicatedMessage")
+                {
+                    Console.WriteLine("Success");
+                    unshippedSession.deliveryStatus = RfidSession.DeliveryStatus.Shipped;
+                }
+
+                else
+                {
+                    Trace.WriteLine(ResponseMsg);
+                }
+            }
+        }
+
         //Регистрация
-        public void Signup()
+        void Signup()
         {
             string post = "login=" + Conf.login + "&pass=" + Conf.pass;
             string url = Conf.server + "/rfid/signup/";
 
             SendPostData(url, post);
 
-            if ((int)StatusCode_ == 200)
+            if ((int)StatusCode == 200)
             {
                 Conf.pass = ResponseMsg;
                 Conf.isRegistered = true;
@@ -43,21 +66,23 @@ namespace rfid
         }
 
         //Перед отсылкой надо сделать аутентификацию и получить куки
-        public void Auth()
+        int Auth()
         {
             string post = "login=" + Conf.login + "&pass=" + Conf.pass;
 
             SendPostData(Conf.server + "/rfid/auth/", post);
 
-            if ((int)StatusCode_ == 200)
+            if ((int)StatusCode == 200)
             {
                 Cookies = Response.Cookies;
                 Cookies["session_id"].Expires = DateTime.MaxValue;
             }
+
+            return (int)StatusCode;
         }
 
         //Отсылаем сессию данных
-        public void SendRfidReport(RfidSession session)
+        int SendRfidReport(RfidSession session)
         {
             var jsonHashString = String.Empty;
             var jsonString = JsonConvert.SerializeObject(session);
@@ -68,16 +93,17 @@ namespace rfid
             {
                 jsonHashString += b.ToString("x2");
             }
-            Console.WriteLine("Checksum: {0}", jsonHashString);
 
             var post = "json=" + jsonString + "&checksum=" + jsonHashString;
             SendPostData(Conf.server + "/rfid/post/", post);
+
+            return (int)StatusCode;
         }
 
         void ProcessResponse(HttpWebResponse response)
         {
             this.ResponseMsg = (new StreamReader(response.GetResponseStream())).ReadToEnd();
-            this.StatusCode_ = response.StatusCode;
+            this.StatusCode = response.StatusCode;
             this.Response = response;
         }
 
@@ -110,6 +136,5 @@ namespace rfid
                 ProcessResponse((HttpWebResponse)e.Response);
             }
         }
-
     }
 }

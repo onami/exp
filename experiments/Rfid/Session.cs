@@ -7,15 +7,19 @@ namespace rfid
 {
     public class RfidSession
     {
-        public enum SessionStatus { Normal = 1, Interrupted = 2 };
-        public string location;
+        public enum DeliveryStatus : int { Unshipped = 0, Shipped = 1 };
+        public enum ReadingStatus : int { Normal = 1, InterruptedByTimer = 2 };
+        public int id;
         public string time;
-        public SessionStatus status;
+        public string location = String.Empty;
+        public DeliveryStatus deliveryStatus;
+        public ReadingStatus readingStatus;
         public List<string> tags;
 
-        public RfidSession(SessionStatus status = SessionStatus.Normal)
+        public RfidSession(DeliveryStatus deliveryStatus = DeliveryStatus.Unshipped, ReadingStatus readingStatus = ReadingStatus.Normal)
         {
-            this.status = status;
+            this.deliveryStatus = deliveryStatus;
+            this.readingStatus = readingStatus;
             tags = new List<string>();
         }
     }
