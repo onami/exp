@@ -89,6 +89,9 @@ namespace rfid
 
         public void Write(RfidSession session)
         {
+            if (session.tags.Count == 0)
+                return;
+
             var transaction = connection.BeginTransaction();
 
             //Register a new session

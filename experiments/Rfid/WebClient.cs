@@ -11,15 +11,28 @@ namespace rfid
 {
     public class RfidWebClient
     {
-        public HttpStatusCode StatusCode { get; private set; }
-        public string ResponseMsg;
-        HttpWebResponse Response;
+        public enum ResponseStatus : int
+        {
+            OK = 0,
+            internalServerError = 1,
+            sessionExpired = 2,
+            corruptedChecksum = 3,
+            corruptedFormat = 4,
+            duplicatedMessage = 5,
+            invalidCredentials = 6,
+            emptyRequest = 7
+        };
+
+        public string Result { get; private set;}
+        public ResponseStatus Status { get; private set; }
+
+        HttpWebResponse HttpResponse;
 
         Configuration Conf;
         CookieCollection Cookies = new CookieCollection();
         SHA1CryptoServiceProvider Sha1 = new SHA1CryptoServiceProvider();
         UTF8Encoding UniEncoding = new UTF8Encoding();
-        
+
         public RfidWebClient(Configuration conf)
         {
             this.Conf = conf;
@@ -32,14 +45,9 @@ namespace rfid
             {
                 //Если дубликат, тоже не отправлять.
                 SendRfidReport(unshippedSession);
-                if ((int)StatusCode == 200 || ResponseMsg == "duplicatedMessage")
+                if (Status == ResponseStatus.OK || Status == ResponseStatus.duplicatedMessage)
                 {
                     unshippedSession.deliveryStatus = RfidSession.DeliveryStatus.Shipped;
-                }
-
-                else
-                {
-                    Trace.WriteLine(ResponseMsg);
                 }
             }
         }
@@ -51,9 +59,9 @@ namespace rfid
 
             SendPostData(Conf.server + "/rfid/auth/", post);
 
-            if ((int)StatusCode == 200)
+            if (Status == ResponseStatus.OK)
             {
-                Cookies = Response.Cookies;
+                Cookies = HttpResponse.Cookies;
                 Cookies["session_id"].Expires = DateTime.MaxValue;
             }
         }
@@ -66,9 +74,9 @@ namespace rfid
 
             SendPostData(url, post);
 
-            if ((int)StatusCode == 200)
+            if (Status == null)
             {
-                Conf.pass = ResponseMsg;
+                Conf.pass = Result;
                 Conf.isRegistered = true;
                 Conf.serialize();
             }
@@ -93,17 +101,30 @@ namespace rfid
 
         void ProcessResponse(HttpWebResponse response)
         {
-            this.ResponseMsg = (new StreamReader(response.GetResponseStream())).ReadToEnd();
-            this.StatusCode = response.StatusCode;
-            this.Response = response;
+            this.HttpResponse = response;
+            var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>((new StreamReader(response.GetResponseStream())).ReadToEnd());
+            this.Result = dict["result"];
+            int Status;
+            if (dict["error"] == null)
+            {
+                this.Status = ResponseStatus.OK;
+            }
+            else if (Int32.TryParse(dict["error"], out Status) == true)
+            {
+                this.Status = (ResponseStatus)Status; 
+            }
+            else
+            {
+                this.Status = ResponseStatus.internalServerError;
+            }
         }
 
         void SendPostData(string URL, string postData)
         {
             byte[] byteArray;
             Stream webpageStream;
-            HttpWebRequest webRequest;        
-            
+            HttpWebRequest webRequest;
+
             byteArray = Encoding.UTF8.GetBytes(postData);
             webRequest = (HttpWebRequest)WebRequest.Create(URL);
             webRequest.Proxy = null; //в противном случае webRequest начинает поиск прокси и тратит кучу времени
