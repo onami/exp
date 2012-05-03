@@ -3,13 +3,13 @@ C:\Users\Андрей\Documents\!work\DL 6970 (console client)\experiments\exper
 C:\Users\Андрей\Documents\!work\DL 6970 (console client)\experiments\experiments\obj\x86\Debug\ResolveAssemblyReference.cache
 C:\Users\Андрей\Documents\!work\DL 6970 (console client)\experiments\experiments\obj\x86\Debug\experiments.exe
 C:\Users\Андрей\Documents\!work\DL 6970 (console client)\experiments\experiments\obj\x86\Debug\experiments.pdb
-E:\projects\exp\experiments\obj\x86\Debug\ResolveAssemblyReference.cache
-E:\projects\exp\experiments\bin\Debug\Newtonsoft.Json.dll
-E:\projects\exp\experiments\bin\Debug\Newtonsoft.Json.pdb
-E:\projects\exp\experiments\bin\Debug\Newtonsoft.Json.xml
-E:\projects\exp\experiments\bin\Debug\DL6940CSharp.dll
 E:\projects\exp\experiments\bin\Debug\DL6970.exe.config
 E:\projects\exp\experiments\bin\Debug\DL6970.exe
 E:\projects\exp\experiments\bin\Debug\DL6970.pdb
+E:\projects\exp\experiments\bin\Debug\DL6940CSharp.dll
+E:\projects\exp\experiments\bin\Debug\Newtonsoft.Json.dll
+E:\projects\exp\experiments\bin\Debug\Newtonsoft.Json.pdb
+E:\projects\exp\experiments\bin\Debug\Newtonsoft.Json.xml
+E:\projects\exp\experiments\obj\x86\Debug\ResolveAssemblyReference.cache
 E:\projects\exp\experiments\obj\x86\Debug\DL6970.exe
 E:\projects\exp\experiments\obj\x86\Debug\DL6970.pdb

@@ -1,51 +1,64 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace rfid
+namespace DL6970.Rfid
 {
     public class RfidWebClient
     {
-        public enum ResponseStatus : int
+        public enum ResponseStatus
         {
-            OK = 0,
-            internalServerError = 1,
-            sessionExpired = 2,
-            corruptedChecksum = 3,
-            corruptedFormat = 4,
-            duplicatedMessage = 5,
-            invalidCredentials = 6,
-            emptyRequest = 7
+            Ok = 0,
+            InternalServerError = 1,
+            SessionExpired = 2,
+            CorruptedChecksum = 3,
+            CorruptedFormat = 4,
+            DuplicatedMessage = 5,
+            InvalidCredentials = 6,
+            EmptyRequest = 7,
+            ConnectionFail = 8
         };
+
+        public bool AuthStatus { get; private set; }
 
         public string Result { get; private set;}
         public ResponseStatus Status { get; private set; }
 
-        HttpWebResponse HttpResponse;
 
-        Configuration Conf;
+        HttpWebResponse HttpResponse;
         CookieCollection Cookies = new CookieCollection();
-        SHA1CryptoServiceProvider Sha1 = new SHA1CryptoServiceProvider();
-        UTF8Encoding UniEncoding = new UTF8Encoding();
+
+        readonly Configuration Conf;
+        
+        readonly SHA1CryptoServiceProvider Sha1 = new SHA1CryptoServiceProvider();
+        readonly UTF8Encoding UniEncoding = new UTF8Encoding();
 
         public RfidWebClient(Configuration conf)
         {
-            this.Conf = conf;
-            if (conf.isRegistered == false) Signup();
+            Conf = conf;
+            if (Conf.IsRegistered == false)
+            {
+                Signup();
+            }
         }
 
         public void SendRfidReports(List<RfidSession> unshippedSessions)
         {
+            if (AuthStatus == false)
+            {
+                Status = ResponseStatus.ConnectionFail;
+                return;
+            }
             foreach (var unshippedSession in unshippedSessions)
             {
                 //Если дубликат, тоже не отправлять.
                 SendRfidReport(unshippedSession);
-                if (Status == ResponseStatus.OK || Status == ResponseStatus.duplicatedMessage)
+                if (Status == ResponseStatus.Ok || Status == ResponseStatus.DuplicatedMessage)
                 {
                     unshippedSession.deliveryStatus = RfidSession.DeliveryStatus.Shipped;
                 }
@@ -55,30 +68,33 @@ namespace rfid
         //Перед отсылкой надо сделать аутентификацию и получить куки
         public void Auth()
         {
-            string post = "login=" + Conf.login + "&pass=" + Conf.pass;
+            var post = "login=" + Conf.Login + "&pass=" + Conf.Pass;
 
-            SendPostData(Conf.server + "/rfid/auth/", post);
+            SendPostData(Conf.Server + "/rfid/auth/", post);
 
-            if (Status == ResponseStatus.OK)
+            if (Status == ResponseStatus.Ok)
             {
                 Cookies = HttpResponse.Cookies;
-                Cookies["session_id"].Expires = DateTime.MaxValue;
+                var cookie = Cookies["session_id"];
+                if (cookie != null) cookie.Expires = DateTime.MaxValue;
+
+                AuthStatus = true;
             }
         }
 
         //Регистрация
         void Signup()
         {
-            string post = "login=" + Conf.login + "&pass=" + Conf.pass;
-            string url = Conf.server + "/rfid/signup/";
+            var post = "login=" + Conf.Login + "&pass=" + Conf.Pass;
+            var url = Conf.Server + "/rfid/signup/";
 
             SendPostData(url, post);
 
-            if (Status == null)
+            if (Status == ResponseStatus.Ok)
             {
-                Conf.pass = Result;
-                Conf.isRegistered = true;
-                Conf.serialize();
+                Conf.Pass = Result;
+                Conf.IsRegistered = true;
+                Conf.Serialize();
             }
         }
 
@@ -88,45 +104,38 @@ namespace rfid
             var jsonHashString = String.Empty;
             var jsonString = JsonConvert.SerializeObject(session);
 
-            byte[] inHashBytes = UniEncoding.GetBytes(jsonString);
-            byte[] outHashBytes = Sha1.ComputeHash(inHashBytes);
-            foreach (var b in outHashBytes)
-            {
-                jsonHashString += b.ToString("x2");
-            }
+            var inHashBytes = UniEncoding.GetBytes(jsonString);
+            var outHashBytes = Sha1.ComputeHash(inHashBytes);
+            jsonHashString = outHashBytes.Aggregate(jsonHashString, (current, b) => current + b.ToString("x2"));
 
             var post = "json=" + jsonString + "&checksum=" + jsonHashString;
-            SendPostData(Conf.server + "/rfid/post/", post);
+            SendPostData(Conf.Server + "/rfid/post/", post);
         }
 
         void ProcessResponse(HttpWebResponse response)
         {
-            this.HttpResponse = response;
+            HttpResponse = response;
             var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>((new StreamReader(response.GetResponseStream())).ReadToEnd());
-            this.Result = dict["result"];
+            Result = dict["result"];
             int Status;
             if (dict["error"] == null)
             {
-                this.Status = ResponseStatus.OK;
+                this.Status = ResponseStatus.Ok;
             }
-            else if (Int32.TryParse(dict["error"], out Status) == true)
+            else if (Int32.TryParse(dict["error"], out Status))
             {
                 this.Status = (ResponseStatus)Status; 
             }
             else
             {
-                this.Status = ResponseStatus.internalServerError;
+                this.Status = ResponseStatus.InternalServerError;
             }
         }
 
-        void SendPostData(string URL, string postData)
+        void SendPostData(string url, string postData)
         {
-            byte[] byteArray;
-            Stream webpageStream;
-            HttpWebRequest webRequest;
-
-            byteArray = Encoding.UTF8.GetBytes(postData);
-            webRequest = (HttpWebRequest)WebRequest.Create(URL);
+            var byteArray = Encoding.UTF8.GetBytes(postData);
+            var webRequest = (HttpWebRequest)WebRequest.Create(url);
             webRequest.Proxy = null; //в противном случае webRequest начинает поиск прокси и тратит кучу времени
             webRequest.Method = "POST";
             webRequest.AllowAutoRedirect = false;
@@ -134,18 +143,26 @@ namespace rfid
             webRequest.ContentLength = byteArray.Length;
             webRequest.CookieContainer = new CookieContainer();
             webRequest.CookieContainer.Add(Cookies);
-            webpageStream = webRequest.GetRequestStream();
-            webpageStream.Write(byteArray, 0, byteArray.Length);
-            webpageStream.Close();
-
             try
             {
-                ProcessResponse((HttpWebResponse)webRequest.GetResponse());
-            }
+                var webpageStream = webRequest.GetRequestStream();
+                webpageStream.Write(byteArray, 0, byteArray.Length);
+                webpageStream.Close();
 
-            catch (WebException e)
+                try
+                {
+                    ProcessResponse((HttpWebResponse)webRequest.GetResponse());
+                }
+
+                catch (WebException e)
+                {
+                    ProcessResponse((HttpWebResponse)e.Response);
+                }
+            }
+            catch
             {
-                ProcessResponse((HttpWebResponse)e.Response);
+                Status = ResponseStatus.ConnectionFail;
+                // throw new WebException();
             }
         }
     }

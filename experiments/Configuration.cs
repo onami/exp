@@ -1,18 +1,17 @@
 ﻿using System;
-using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
-using System.Security.Cryptography;
 
-namespace rfid
+namespace DL6970
 {
     public class Configuration
     {
-        public string server = "http://rfidserver";
+        public string Server = "http://rfidserver";
         [XmlAttribute]
-        public bool isRegistered = false;
-        public string login;
-        public string pass;
+        public bool IsRegistered;
+        public string Login;
+        public string Pass;
+        public string Location;
 
         [NonSerialized]
         private readonly Random _rng = new Random();
@@ -24,18 +23,18 @@ namespace rfid
 
         string GetRandomString(int size)
         {
-            const string _chars = "abcdefghijklmnopqstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            char[] buffer = new char[size];
+            const string chars = "abcdefghijklmnopqstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var buffer = new char[size];
 
-            for(int i = 0; i < size; i++)
+            for(var i = 0; i < size; i++)
             {
-                buffer[i] = _chars[_rng.Next(_chars.Length)];
+                buffer[i] = chars[_rng.Next(chars.Length)];
             }
 
             return new string(buffer);
         }
 
-        public void serialize(string path = "config.xml")
+        public void Serialize(string path = "config.xml")
         {
             var serializer = new XmlSerializer(typeof(Configuration));
             File.Delete(path);
@@ -44,23 +43,22 @@ namespace rfid
             writer.Close();
         }
 
-        public static Configuration deserialize(string path = "config.xml")
+        public static Configuration Deserialize(string path = "config.xml")
         {
             try
             {
-                //TODO::using
-                XmlSerializer serializer = new XmlSerializer(typeof(Configuration));
-                FileStream fs = new FileStream(path, FileMode.Open);
+                var serializer = new XmlSerializer(typeof(Configuration));
+                var fs = new FileStream(path, FileMode.Open);
                 var conf = (Configuration)serializer.Deserialize(fs);
                 fs.Close();
                 return conf;
             }
 
-            catch (FileNotFoundException e)
+            catch
             {
-                var conf = new Configuration();
-                conf.login = conf.GenerateDeviceKey();
-                conf.serialize();
+                //var conf = new Configuration();
+                //conf.Login = conf.GenerateDeviceKey();
+                //conf.Serialize();
                 return null;
             }
         }

@@ -1,53 +1,43 @@
 ﻿using System;
 using System.Data.SQLite;
 using System.Data;
-using System.Diagnostics;
 using System.Collections.Generic;
 
-namespace rfid
+namespace DL6970.Rfid
 {
     public class RfidTagsCollector
     {
-        SQLiteConnection connection;
+        private readonly SQLiteConnection connection;
 
         public RfidTagsCollector(string connectionString)
         {
             connectionString = "data source=" + connectionString;
 
             //SQLite normally creates a new database without throwing any exeption.
-            //So, if one wants to know whether a database exists or not, one should add the 'FailIfMissing=True' option.
-            try
-            {
-                connection = new SQLiteConnection(connectionString + "; FailIfMissing=True");
-                connection.Open();
-            }
-            catch (SQLiteException e)
-            {
-                Trace.WriteLine(DateTime.Now.ToString() + "\tThe database wasn't found. A new one was created.");
-                connection = new SQLiteConnection(connectionString);
-                connection.Open();
-            }
+            //So, if one wants to know whether a database exists or not,
+            //he should add the 'FailIfMissing=True' option.
+            connection = new SQLiteConnection(connectionString);
+            connection.Open();
             CreateTables();
         }
 
         public List<RfidSession> GetUnshippedTags()
         {
             var sessions = new List<RfidSession>();
-
             var sessionCmd = new SQLiteCommand(@"SELECT * from reading_sessions where delivery_status <> " + (int)RfidSession.DeliveryStatus.Shipped, connection);
 
             using (var sessionReader = sessionCmd.ExecuteReader())
             {
                 while (sessionReader.Read())
                 {
-                    var session = new RfidSession()
+                    var session = new RfidSession
                         {
-                        id = sessionReader.GetInt32(0),
-                        time = sessionReader.GetString(1),
-                        location = sessionReader.GetString(2),
-                        deliveryStatus = (RfidSession.DeliveryStatus)sessionReader.GetInt32(3),
-                        readingStatus = (RfidSession.ReadingStatus)sessionReader.GetInt32(4),
-                        readingMode = (RfidSession.ReadingMode)sessionReader.GetInt32(5)
+                            id = sessionReader.GetInt32(0),
+                            time = sessionReader.GetString(1),
+                            location = sessionReader.GetString(2),
+                            deliveryStatus = (RfidSession.DeliveryStatus)sessionReader.GetInt32(3),
+                            readingStatus = (RfidSession.ReadingStatus)sessionReader.GetInt32(4),
+                            sessionMode = (RfidSession.SessionMode)sessionReader.GetInt32(5)
                         };
 
                     var tagCmd = new SQLiteCommand(@"SELECT * from tubes where session_id = " + session.id, connection);
@@ -95,14 +85,14 @@ namespace rfid
             var transaction = connection.BeginTransaction();
 
             //Register a new session
-            var cmd = new SQLiteCommand(@"INSERT INTO reading_sessions
-                   (time_marker,  location_id,  delivery_status,  reading_status,  reading_mode)
-            VALUES(@time_marker, @location_id, @delivery_status, @reading_status, @reading_mode)", connection);
+            var cmd = new SQLiteCommand(@"
+            INSERT INTO reading_sessions (time_marker,  location_id,  delivery_status,  reading_status,  reading_mode)
+                                  VALUES(@time_marker, @location_id, @delivery_status, @reading_status, @reading_mode)", connection);
             cmd.Parameters.AddWithValue("@time_marker", session.time);
             cmd.Parameters.AddWithValue("@location_id", session.location);
             cmd.Parameters.AddWithValue("@delivery_status", session.deliveryStatus);
             cmd.Parameters.AddWithValue("@reading_status", session.readingStatus);
-            cmd.Parameters.AddWithValue("@reading_mode", session.readingMode);
+            cmd.Parameters.AddWithValue("@reading_mode", session.sessionMode);
             cmd.ExecuteNonQuery();
 
             //Look up the last session id
@@ -112,15 +102,16 @@ namespace rfid
             //Prepare for INSERT
             cmd = new SQLiteCommand("INSERT INTO tubes (session_id, tag) VALUES(@session_id, @tag)", connection);
             cmd.Parameters.AddWithValue("@session_id", sessionId);
-            SQLiteParameter tag_ = new SQLiteParameter("@tag");
+            var tag_ = new SQLiteParameter("@tag");
             cmd.Parameters.Add(tag_);
 
             //Add new tags
-            foreach (string tag in session.tags)
+            foreach (var tag in session.tags)
             {
                 tag_.Value = tag;
                 cmd.ExecuteNonQuery();
             }
+
             transaction.Commit();
         }
 
