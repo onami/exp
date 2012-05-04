@@ -70,7 +70,7 @@ namespace DL6970.Rfid
         {
             var post = "login=" + Conf.Login + "&pass=" + Conf.Pass;
 
-            SendPostData(Conf.Server + "/rfid/auth/", post);
+            SendPostData(Conf.Server + "/auth/", post);
 
             if (Status == ResponseStatus.Ok)
             {
@@ -86,7 +86,7 @@ namespace DL6970.Rfid
         void Signup()
         {
             var post = "login=" + Conf.Login + "&pass=" + Conf.Pass;
-            var url = Conf.Server + "/rfid/signup/";
+            var url = Conf.Server + "/signup/";
 
             SendPostData(url, post);
 
@@ -109,7 +109,7 @@ namespace DL6970.Rfid
             jsonHashString = outHashBytes.Aggregate(jsonHashString, (current, b) => current + b.ToString("x2"));
 
             var post = "json=" + jsonString + "&checksum=" + jsonHashString;
-            SendPostData(Conf.Server + "/rfid/post/", post);
+            SendPostData(Conf.Server + "/post/", post);
         }
 
         void ProcessResponse(HttpWebResponse response)

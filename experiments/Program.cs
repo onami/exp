@@ -84,9 +84,9 @@ namespace DL6970
                 var reader = new DL6970Reader();
                 var webClient = new RfidWebClient(Configuration.Deserialize());
                 var daemon = new Daemon(collector, webClient, reader);
-                daemon.Read();
-                daemon.Read();
-                daemon.Read();
+                //daemon.Read();
+               // daemon.Read();
+                //daemon.Read();
                 daemon.Send();
                 //new Thread(daemon.Read).Start();
                 reader.CloseConnection();

@@ -6,7 +6,7 @@ namespace DL6970
 {
     public class Configuration
     {
-        public string Server = "http://rfidserver";
+        public string Server = "http://o/rfid";
         [XmlAttribute]
         public bool IsRegistered;
         public string Login;
