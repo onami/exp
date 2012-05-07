@@ -8,25 +8,11 @@ namespace DL6970
 {
     class Daemon
     {
-        private readonly RfidTagsCollector collector;
-        private readonly RfidWebClient webClient;
-        private readonly DL6970Reader reader;
+        private readonly RfidTagsCollector collector = new RfidTagsCollector("rfid.db");
+        private readonly RfidWebClient webClient = new RfidWebClient(Configuration.Deserialize());
+        private readonly DL6970Reader reader = new DL6970Reader();
 
         public bool IsSending { get; private set; }
-
-        public Daemon(RfidTagsCollector collector, RfidWebClient webClient, DL6970Reader reader)
-        {
-            this.collector = collector;
-            this.webClient = webClient;
-            this.reader = reader;
-            try
-            {
-                webClient.Auth();
-                Send(); ;
-               // new Thread(this.Send).Start();
-            }
-            catch (WebException) { Console.WriteLine("Fail."); }
-        }
 
         public void Send()
         {
@@ -42,15 +28,10 @@ namespace DL6970
             }
 
             webClient.SendRfidReports(sessions);
+
             lock (collector)
             {
                 collector.SetDeliveryStatus(sessions);
-            }
-
-            if (webClient.Status == RfidWebClient.ResponseStatus.Ok)
-            {
-                Console.WriteLine("Sent {0}", sessions.Count);
-
             }
 
             IsSending = false;
@@ -69,8 +50,12 @@ namespace DL6970
                 collector.Write(session);
             }
 
-         //   new Thread(this.Send).Start();
             return;
+        }
+
+        public void Shutdown()
+        {
+            reader.CloseConnection();
         }
     }
 
@@ -79,17 +64,14 @@ namespace DL6970
         static void Main()
         {
             try
-            {
-                var collector = new RfidTagsCollector("rfid.db");
-                var reader = new DL6970Reader();
-                var webClient = new RfidWebClient(Configuration.Deserialize());
-                var daemon = new Daemon(collector, webClient, reader);
-                //daemon.Read();
+            {                
+                var daemon = new Daemon();
                // daemon.Read();
-                //daemon.Read();
                 daemon.Send();
+                daemon.Shutdown();
+
                 //new Thread(daemon.Read).Start();
-                reader.CloseConnection();
+
             }
             catch (NullReferenceException) { }
 

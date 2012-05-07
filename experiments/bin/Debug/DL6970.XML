@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DL6970</name>
+    </assembly>
+    <members>
+        <member name="T:DL6970.Rfid.RpcResponse">
+            <summary>
+            Используется модификация стандарта JSON-RPC:
+                В result записывается некие данные, которые возвращает сервер в ответ на запрос; 
+                В error записывается либо null, если всё прошло нормально, либо же код ошибки.
+                В последнем случае в result записывается возможное словесное описание ошибки. 
+            </summary>
+        </member>
+        <member name="T:DL6970.Rfid.RpcResponse.StatusCode">
+            <summary>
+            Перечисление определяет возможный статус запроса, возвращаемый сервером.
+            InternalServerError и ConnectionFail могут
+            быть установлены самим клиентом в SendPostData
+            </summary>
+        </member>
+        <member name="T:DL6970.Rfid.RfidWebClient">
+            <summary>
+            Класс, отвечающий за посылку данных считывания на сервер
+            </summary>
+        </member>
+        <member name="F:DL6970.Rfid.RfidWebClient.Configuration">
+            <summary>
+            Определяет настройки подключения: сервер, ключ устройства.
+            Смотри файл config.xml.
+            </summary>
+        </member>
+        <member name="M:DL6970.Rfid.RfidWebClient.#ctor(DL6970.Configuration)">
+            <summary>
+             Инициализация вебклиента
+            </summary>
+            <param name="conf"></param>
+        </member>
+        <member name="M:DL6970.Rfid.RfidWebClient.SendRfidReports(System.Collections.Generic.List{DL6970.Rfid.RfidSession})">
+            <summary>
+            Посылка сессий считывания
+            </summary>
+            <param name="unshippedSessions">Список сессий считывания со статусом Session.DeliveryStatus.Unshipped.
+            Список заполняется TagsCollector.GetUnshippedTags()</param>
+        </member>
+        <member name="M:DL6970.Rfid.RfidWebClient.SendPostData(System.String,System.String)">
+            <summary>
+            Отправка и обработка данных. Обёртка над UploadString.
+            </summary>
+            <param name="url">Метод</param>
+            <param name="data">Параметры</param>
+        </member>
+    </members>
+</doc>

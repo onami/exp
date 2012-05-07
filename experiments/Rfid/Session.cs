@@ -15,10 +15,14 @@ namespace DL6970.Rfid
         public string time;
         public string location = String.Empty;
         [JsonIgnore]
+        [CLSCompliant(false)]
         public DeliveryStatus deliveryStatus = DeliveryStatus.Unshipped;
+        [CLSCompliant(false)]
         public ReadingStatus readingStatus = ReadingStatus.Normal;
+        [CLSCompliant(false)]
         public SessionMode sessionMode = SessionMode.Reading;
         public List<string> tags;
+
 
         public RfidSession()
         {

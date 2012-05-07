@@ -6,33 +6,9 @@ namespace DL6970
 {
     public class Configuration
     {
-        public string Server = "http://o/rfid";
-        [XmlAttribute]
-        public bool IsRegistered;
-        public string Login;
-        public string Pass;
+        public string Server;
+        public string DeviceKey;
         public string Location;
-
-        [NonSerialized]
-        private readonly Random _rng = new Random();
-
-        public string GenerateDeviceKey()
-        {
-           return GetRandomString(40); 
-        }
-
-        string GetRandomString(int size)
-        {
-            const string chars = "abcdefghijklmnopqstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var buffer = new char[size];
-
-            for(var i = 0; i < size; i++)
-            {
-                buffer[i] = chars[_rng.Next(chars.Length)];
-            }
-
-            return new string(buffer);
-        }
 
         public void Serialize(string path = "config.xml")
         {
@@ -56,9 +32,8 @@ namespace DL6970
 
             catch
             {
-                //var conf = new Configuration();
-                //conf.Login = conf.GenerateDeviceKey();
-                //conf.Serialize();
+                var conf = new Configuration();
+                conf.Serialize();
                 return null;
             }
         }
