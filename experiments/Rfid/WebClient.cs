@@ -41,7 +41,7 @@ namespace DL6970.Rfid
     /// <summary>
     /// Класс, отвечающий за посылку данных считывания на сервер
     /// </summary>
-    public class RfidWebClient : WebClient
+    public class RfidWebClient
     {
         /// <summary>
         /// Определяет настройки подключения: сервер, ключ устройства.

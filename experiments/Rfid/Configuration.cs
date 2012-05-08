@@ -4,12 +4,19 @@ using System.IO;
 
 namespace DL6970
 {
+    /// <summary>
+    /// Класс, хранящий данные о соединении с сервером
+    /// </summary>
     public class Configuration
     {
         public string Server;
         public string DeviceKey;
         public string Location;
 
+        /// <summary>
+        /// Сериализовать данные и сохранить
+        /// </summary>
+        /// <param name="path"></param>
         public void Serialize(string path = "config.xml")
         {
             var serializer = new XmlSerializer(typeof(Configuration));
@@ -19,6 +26,11 @@ namespace DL6970
             writer.Close();
         }
 
+        /// <summary>
+        /// Мэппинг конфигурации из файла в экземпляр класса
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public static Configuration Deserialize(string path = "config.xml")
         {
             try

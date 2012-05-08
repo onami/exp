@@ -7,6 +7,9 @@ using ReaderB;
 
 namespace DL6970.Rfid
 {
+    /// <summary>
+    /// Класс для работы непосредственно с ридером RFID-меток
+    /// </summary>
     class DL6970Reader
     {
         enum MemoryMask : byte
@@ -48,17 +51,8 @@ namespace DL6970.Rfid
         public void GetTags(int interval, int count, ref List<string> tagsSet, out string timeMarker)
         {    
 
-            //Переводим китайское время в формат dd-mm-yy hh:mm:ss
-            //var timeMarker_ = new byte[6];
-            //StaticClassReaderB.GetTime(ref readerAdress, timeMarker_, portReturned);
-            //DL6970 cannot into Unix time
-            //timeMarker = (new DateTime(2000 + Convert.ToInt32(timeMarker_[0]),
-            //    Convert.ToInt32(timeMarker_[1]),
-            //    Convert.ToInt32(timeMarker_[2]),
-            //    Convert.ToInt32(timeMarker_[3]),
-            //    Convert.ToInt32(timeMarker_[4]),
-            //    Convert.ToInt32(timeMarker_[5])
-            //    )).ToString("yyyy-MM-dd HH:mm:ss");
+            //У стационарного считывателя отстаёт время
+            //Берём самостоятельно. <Старый код см. в коммитах до 08.05.2012>
             timeMarker = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss");
 
             var epcList = new byte[10000];

@@ -1,10 +1,13 @@
 ﻿using System;
-using System.Data.SQLite;
-using System.Data;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SQLite;
 
 namespace DL6970.Rfid
 {
+    /// <summary>
+    /// Класс записи и чтения с sqlite-базы
+    /// </summary>
     public class RfidTagsCollector
     {
         private readonly SQLiteConnection connection;
@@ -21,6 +24,9 @@ namespace DL6970.Rfid
             CreateTables();
         }
 
+        /// <summary>
+        /// Возвращает список неотправленных на сервер сессий чтения
+        /// </summary>
         public List<RfidSession> GetUnshippedTags()
         {
             var sessions = new List<RfidSession>();
@@ -54,6 +60,9 @@ namespace DL6970.Rfid
             return sessions;
         }
 
+        /// <summary>
+        /// Иниализация новой базы
+        /// </summary>
         void CreateTables()
         {
             using (var cmd = new SQLiteCommand(connection))
@@ -115,6 +124,11 @@ namespace DL6970.Rfid
             transaction.Commit();
         }
 
+        /// <summary>
+        /// Закрытие соединения
+        /// </summary>
+        /// <remarks>По каким-то причинам в Win CE закрытие не работает в деструкторе,
+        /// поэтому был вынес его в этот метод</remarks>
         public void Close()
         {
             if (connection.State == ConnectionState.Open)
@@ -124,6 +138,10 @@ namespace DL6970.Rfid
             }
         }
 
+        /// <summary>
+        /// Обновление состояния по сессиям. Применяется при успешной отправке данных.
+        /// </summary>
+        /// <param name="sessions"></param>
         public void SetDeliveryStatus(List<RfidSession> sessions)
         {
             foreach (var session in sessions)

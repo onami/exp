@@ -4,6 +4,11 @@
         <name>DL6970</name>
     </assembly>
     <members>
+        <member name="T:DL6970.Rfid.DL6970Reader">
+            <summary>
+            Класс для работы непосредственно с ридером RFID-меток
+            </summary>
+        </member>
         <member name="T:DL6970.Rfid.RpcResponse">
             <summary>
             Используется модификация стандарта JSON-RPC:
@@ -49,6 +54,58 @@
             </summary>
             <param name="url">Метод</param>
             <param name="data">Параметры</param>
+        </member>
+        <member name="T:DL6970.Rfid.RfidSession">
+            <summary>
+            Класс, хранящий данные об одной сессии чтения
+            Готов к сериализации в JSON.
+            </summary>
+        </member>
+        <member name="T:DL6970.Configuration">
+            <summary>
+            Класс, хранящий данные о соединении с сервером
+            </summary>
+        </member>
+        <member name="M:DL6970.Configuration.Serialize(System.String)">
+            <summary>
+            Сериализовать данные и сохранить
+            </summary>
+            <param name="path"></param>
+        </member>
+        <member name="M:DL6970.Configuration.Deserialize(System.String)">
+            <summary>
+            Мэппинг конфигурации из файла в экземпляр класса
+            </summary>
+            <param name="path"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DL6970.Rfid.RfidTagsCollector">
+            <summary>
+            Класс записи и чтения с sqlite-базы
+            </summary>
+        </member>
+        <member name="M:DL6970.Rfid.RfidTagsCollector.GetUnshippedTags">
+            <summary>
+            Возвращает список неотправленных на сервер сессий чтения
+            </summary>
+        </member>
+        <member name="M:DL6970.Rfid.RfidTagsCollector.CreateTables">
+            <summary>
+            Иниализация новой базы
+            </summary>
+        </member>
+        <member name="M:DL6970.Rfid.RfidTagsCollector.Close">
+            <summary>
+            Закрытие соединения
+            </summary>
+            <remarks>По каким-то причинам в Win CE закрытие не работает в деструкторе,
+            поэтому был вынес его в этот метод</remarks>
+        </member>
+        <member name="M:DL6970.Rfid.RfidTagsCollector.SetDeliveryStatus(System.Collections.Generic.List{DL6970.Rfid.RfidSession})">
+            <summary>
+            Обновление состояния по сессиям. Применяется при успешной отправке данных.
+            </summary>
+            <param name="sessions"></param>
         </member>
     </members>
 </doc>

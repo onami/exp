@@ -4,6 +4,10 @@ using Newtonsoft.Json;
 
 namespace DL6970.Rfid
 {
+    /// <summary>
+    /// Класс, хранящий данные об одной сессии чтения
+    /// Готов к сериализации в JSON.
+    /// </summary>
     public class RfidSession
     {
         public enum DeliveryStatus { Unshipped = 0, Shipped = 1 };
